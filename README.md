@@ -29,5 +29,5 @@ To render a template you just call the function with a context object:
 
 Based on:
 
-* CoffeeKup - https://github.com/mauricemach/coffeekup
-* jQuery Builder - https://github.com/quackingduck/jquery.builder.js
+* CoffeeKup - <https://github.com/mauricemach/coffeekup>
+* jQuery Builder - <https://github.com/quackingduck/jquery.builder.js>
