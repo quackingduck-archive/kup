@@ -13,14 +13,36 @@ kup = window.Kup = (template, options = {}) ->
 
   new Function('context', 'ck_options', code)
 
-kup.version = '0.1'
+kup.version = '0.2'
 
 skeleton = (context = {}, ck_options = {}) ->
   ck_options.format ?= off
   ck_options.autoescape ?= on
   ck_buffer = []
+  ck_prev_underscore = window._
 
-  n = (css_str, opts...) ->
+  _ =
+    if ck_prev_underscore
+      (->
+        f = ->
+          if typeof arguments[0] is 'string'
+            css_tag.apply context, arguments
+          else
+            ck_prev_underscore.apply null, arguments
+        f.prototype = ck_prev_underscore.prototype
+        f
+      )()
+    else
+      -> css_tag.apply context, arguments
+
+  # deprecated interface
+  n = ->
+    ck_warn "n method deprecated, use _"
+    _.apply context, arguments
+
+  css_tag = (css_str, opts...) ->
+    return append css_str if css_str[0] == '<'
+
     match = css_str.match /^([^\.].+?)?(#.+?)?(\..+?)?$/
     throw "#{css_str} not a valid tag string" unless match?
     [tag_name,id,classes] = match[1..match.length]
@@ -37,18 +59,60 @@ skeleton = (context = {}, ck_options = {}) ->
     opts.unshift attrs
     ck_tag tag_name, opts
 
-  tag = -> name = arguments[0]; delete arguments[0]; ck_tag(name, arguments)
+  # deprecated interface
+  tag = ->
+    ck_warn "tag method deprecated, use _"
+    name = arguments[0]; delete arguments[0];
+    ck_tag(name, arguments)
 
   text = (txt) ->
-    ck_buffer.push String(txt)
-    null
+    append h txt
 
   h = (txt) ->
     String(txt).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
   comment = (cmt) ->
-    text "<!--#{cmt}-->"
-    text '\n' if ck_options.format
+    append "<!--#{cmt}-->"
+    append '\n' if ck_options.format
+
+  append = (html) ->
+    ck_buffer.push String(html)
+    null
+
+  coffeescript = (code) ->
+    script ";(#{code})();"
+
+  ck_tag = (name, opts) ->
+    ck_indent()
+    append "<#{name}"
+
+    for o in opts
+      append ck_render_attrs(o) if typeof o is 'object'
+
+    if name in ck_self_closing
+      append ' />'
+      append '\n' if ck_options.format
+    else
+      append '>'
+
+      for o in opts
+        switch typeof o
+          when 'string', 'number'
+            append ck_esc(o)
+          when 'function'
+            append '\n' if ck_options.format
+            ck_tabs++
+            result = o.call context
+            if typeof result is 'string'
+              ck_indent()
+              append ck_esc(result)
+              append '\n' if ck_options.format
+            ck_tabs--
+            ck_indent()
+      append "</#{name}>"
+      append '\n' if ck_options.format
+
+    null
 
   ck_render_attrs = (obj) ->
     str = ''
@@ -69,42 +133,10 @@ skeleton = (context = {}, ck_options = {}) ->
 
   ck_repeat = (string, count) -> Array(count + 1).join string
 
-  ck_indent = -> text ck_repeat('  ', ck_tabs) if ck_options.format
+  ck_indent = -> append ck_repeat('  ', ck_tabs) if ck_options.format
 
-  ck_tag = (name, opts) ->
-    ck_indent()
-    text "<#{name}"
-
-    for o in opts
-      text ck_render_attrs(o) if typeof o is 'object'
-
-    if name in ck_self_closing
-      text ' />'
-      text '\n' if ck_options.format
-    else
-      text '>'
-
-      for o in opts
-        switch typeof o
-          when 'string', 'number'
-            text ck_esc(o)
-          when 'function'
-            text '\n' if ck_options.format
-            ck_tabs++
-            result = o.call context
-            if typeof result is 'string'
-              ck_indent()
-              text ck_esc(result)
-              text '\n' if ck_options.format
-            ck_tabs--
-            ck_indent()
-      text "</#{name}>"
-      text '\n' if ck_options.format
-
-    null
-
-  coffeescript = (code) ->
-    script ";(#{code})();"
+  ck_warn = (msg) ->
+    console.warn msg if console and console.warn
 
   null
 

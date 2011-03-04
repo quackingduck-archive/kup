@@ -6,10 +6,10 @@ css-like syntax
 Example:
 
     template = Kup ->
-      n '.field', ->
-        n '.placeholder', 'Description'
-        n '.focused' if @focused
-        n 'textarea.field', { readonly: not @editable }, @val
+      _ '.field', ->
+        _ '.placeholder', 'Description'
+        _ '.focused' if @focused
+        _ 'textarea.field', { readonly: not @editable }, @val
 
 produces the same output (but does not compile to)
 
