@@ -13,7 +13,7 @@ kup = window.Kup = (template, options = {}) ->
 
   new Function('context', 'ck_options', code)
 
-kup.version = '0.2'
+kup.version = '0.3'
 
 skeleton = (context = {}, ck_options = {}) ->
   ck_options.format ?= off
@@ -26,7 +26,10 @@ skeleton = (context = {}, ck_options = {}) ->
       (->
         f = ->
           if typeof arguments[0] is 'string'
-            css_tag.apply context, arguments
+            if arguments[0][0] is '<'
+              append arguments[0]
+            else
+              css_tag.apply context, arguments
           else
             ck_prev_underscore.apply null, arguments
         f.prototype = ck_prev_underscore.prototype
