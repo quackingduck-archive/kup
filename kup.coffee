@@ -13,7 +13,14 @@ kup = window.Kup = (template, options = {}) ->
 
   new Function('context', 'ck_options', code)
 
-kup.version = '0.3'
+kup.version = '0.4'
+
+# If jQuery is present then Kup.$ can be used to generate a jQuery object
+# that hasn't yet been inserted into the DOM
+#
+# E.g. `Kup.$( -> '.foo')` is equivalent to `$('<div class="foo"></div>')`
+if window.jQuery
+  kup.$ = (template) -> $ kup(template)()
 
 skeleton = (context = {}, ck_options = {}) ->
   ck_options.format ?= off
