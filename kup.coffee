@@ -13,7 +13,7 @@ kup = window.Kup = (template, options = {}) ->
 
   new Function('context', 'ck_options', code)
 
-kup.version = '0.4'
+kup.version = '0.5'
 
 # If jQuery is present then Kup.$ can be used to generate a jQuery object
 # that hasn't yet been inserted into the DOM
@@ -53,7 +53,7 @@ skeleton = (context = {}, ck_options = {}) ->
   css_tag = (css_str, opts...) ->
     return append css_str if css_str[0] == '<'
 
-    match = css_str.match /^([^\.].+?)?(#.+?)?(\..+?)?$/
+    match = css_str.match /^([^\.]+?)?(#.+?)?(\..+?)?$/
     throw "#{css_str} not a valid tag string" unless match?
     [tag_name,id,classes] = match[1..match.length]
     tag_name or= 'div'
