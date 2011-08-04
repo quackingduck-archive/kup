@@ -20,7 +20,7 @@ kup.version = '0.5'
 #
 # E.g. `Kup.$( -> '.foo')` is equivalent to `$('<div class="foo"></div>')`
 if window.jQuery
-  kup.$ = (template) -> $ kup(template)()
+  kup.$ = (template) -> window.jQuery kup(template)()
 
 skeleton = (context = {}, ck_options = {}) ->
   ck_options.format ?= off
